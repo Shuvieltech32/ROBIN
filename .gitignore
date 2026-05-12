@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+data/device_history.json
+data/known_devices.json
+data/labels.json
+logs/
+.env
