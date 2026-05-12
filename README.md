@@ -67,3 +67,16 @@ Cline the repository:
 '''bash
 git clone https://github.com/Shuvieltech32/ROBIN.git
 cd ROBIN
+
+
+# Warning
+
+R.O.B.I.N is intended for educational, defensive, and authorized security monitoring purposes only.
+
+Do not use this project on networks or systems you do not own or have permission to test.
+
+# Author 
+
+Dimitri Elder
+Founder of R.O.B.I.N 
+Cybersecurity Student & Security Researcher
