@@ -1,4 +1,5 @@
 venv/
+venve/
 __pycache__/
 *.pyc
 data/device_history.json
