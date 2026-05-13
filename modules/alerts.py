@@ -18,3 +18,13 @@ def critical_alert(device):
 def detect_new_device(ip, history):
     if ip in history and history[ip].get("count") == 1:
         print(f"[ALERT] NEW DEVICE DETECTED: {ip}")
+
+
+def critical_threat_alert(device):
+    ip = device.get("ip", "Unknown")
+    risk = device.get("risk", "LOW")
+    label = device.get("label", "Unknown")
+    reason = device.get("reason", "No reason provided")
+
+    if risk == "CRITICAL":
+        print(f"[CRITICAL ALERT] {ip} | Label: {label} | Reason {reason}")

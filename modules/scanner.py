@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from modules.fingerprint import apply_fingerprints
 from modules.device_identity import enrich_devices
-from modules.alerts import critical_alert, detect_new_device
+from modules.alerts import critical_alert, detect_new_device, critical_threat_alert
 from modules.risk_engine import assign_risk
 from modules.firewall import ban_ip
 from modules.labels import load_labels
@@ -340,9 +340,9 @@ def main():
         if device["label"] == "Unknown":
             device["risk"] = "HIGH"
 
-        # Critical device rule
-        if device["ip"].endswith(".44"):
-            device["risk"] = "CRITICAL"
+    # Critical threat alerts
+    for device in devices:
+        critical_threat_alert(device)
 
     # Load and update history
     history = load_history()
