@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from modules.fingerprint import apply_fingerprints
 from modules.device_identity import enrich_devices
-from modules.alerts import critical_alert
+from modules.alerts import critical_alert, detect_new_device
 from modules.risk_engine import assign_risk
 from modules.firewall import ban_ip
 from modules.labels import load_labels
@@ -13,6 +13,7 @@ import re
 import netifaces
 from datetime import datetime
 from modules.telegram_alert import send_telegram_alert
+import time
 
 BASELINE_FILE = "data/known_devices.json"
 LABELS_FILE = "data/labels.json"
@@ -348,6 +349,11 @@ def main():
     if history is None:
         history = {}
 
+    for device in devices:
+        ip = device.get("ip")
+        if ip:
+            detect_new_device(ip, history)
+
     # Event correlation
     devices = correlate_events(devices, known, new, history)
 
@@ -375,4 +381,16 @@ def main():
     print("=== Scan Complete ===")
 
 if __name__ == "__main__":
-    main()
+    while True:
+        print("\n=== Starting New Scan Cycle ===\n")
+
+        try:
+            scan_main()
+
+        except Exception as e:
+            print(f"[ERROR] {e}")
+
+        print("\n=== Scan Complete ===")
+        print("waiting 60 seconds before next scan...\n")
+
+        time.sleep(60)
