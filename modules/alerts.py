@@ -28,3 +28,27 @@ def critical_threat_alert(device):
 
     if risk == "CRITICAL":
         print(f"[CRITICAL ALERT] {ip} | Label: {label} | Reason {reason}")
+
+def service_change_alert(ip, services, history):
+
+    if isinstance(history, dict):
+        old_entry = history.get(ip, {})
+    else:
+        old_entry = {}
+
+    if isinstance(old_entry, dict):
+        old_services = old_entry.get("services", [])
+    elif isinstance(old_entry, list):
+        old_services = old_entry
+    else:
+        old_services = []
+
+    new_services = []
+
+    for service in services:
+        if service not in old_services:
+            new_services.append(service)
+
+    for service in new_services:
+        print(f"[ALERT] SERVICE CHANGE DETECTED: {ip} opened {service}")
+

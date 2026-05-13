@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from modules.fingerprint import apply_fingerprints
 from modules.device_identity import enrich_devices
-from modules.alerts import critical_alert, detect_new_device, critical_threat_alert
+from modules.alerts import critical_alert, detect_new_device, critical_threat_alert, service_change_alert
 from modules.risk_engine import assign_risk
 from modules.firewall import ban_ip
 from modules.labels import load_labels
@@ -353,6 +353,13 @@ def main():
         ip = device.get("ip")
         if ip:
             detect_new_device(ip, history)
+
+    for device in devices:
+        ip = device.get("ip")
+        services = device.get("services", [])
+
+        if ip:
+            service_change_alert(ip, services, history)
 
     # Event correlation
     devices = correlate_events(devices, known, new, history)
