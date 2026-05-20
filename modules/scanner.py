@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from modules.profiler import profile_device
 from modules.fingerprint import apply_fingerprints
 from modules.device_identity import enrich_devices
 from modules.alerts import critical_alert, detect_new_device, critical_threat_alert, service_change_alert
@@ -200,7 +201,10 @@ def assign_risk(device, new_devices):
 
 def correlate_events(devices, known, new, history):
     for device in devices:
+        device = profile_device(device)
+
         ip = device.get("ip")
+
         if not ip:
             continue
 

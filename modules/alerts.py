@@ -1,9 +1,21 @@
 from modules.telegram_alert import send_telegram_alert
+from datetime import datetime
+import os
 
+ALERT_LOG = "logs/alerts.log"
+
+def log_alert(message):
+    os.makedirs("logs", exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    with open(ALERT_LOG, "a") as f:
+        f.write(f"[{timestamp}] {message}\n")
 
 def detect_new_device(ip, history):
-    if history[ip]["count"] ==1:
-        print(f"[ALERT] NEW DEVICE DETECTED: {ip}")
+        message = f"[ALERT] TEST ALERT: {ip}"
+        print(message)
+        log_alert(message)
 
 def critical_alert(device):
     message = (
@@ -17,8 +29,9 @@ def critical_alert(device):
 
 def detect_new_device(ip, history):
     if ip in history and history[ip].get("count") == 1:
-        print(f"[ALERT] NEW DEVICE DETECTED: {ip}")
-
+        message = f"[ALERT] NEW DEVICE DETECTED: {ip}"
+        print(message)
+        log_alert(message)
 
 def critical_threat_alert(device):
     ip = device.get("ip", "Unknown")
@@ -50,5 +63,6 @@ def service_change_alert(ip, services, history):
             new_services.append(service)
 
     for service in new_services:
-        print(f"[ALERT] SERVICE CHANGE DETECTED: {ip} opened {service}")
-
+        message = f"[ALERT] SERVICE CHANGE DETECTED: {ip} opened {service}"
+        print(message)
+        log_alert(message)
