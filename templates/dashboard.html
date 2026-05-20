@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<html>
+<head>
+    <title>R.O.B.I.N Dashboard</title>
+
+    <style>
+
+    body {
+        background-color: #0b1020;
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #444;
+        padding: 10px;
+    }
+
+    th {
+        background-color: #111827;
+        color: #4fd1ff;
+    }
+
+    .high-row {
+        background-color: rgba(255,0,0,0.15);
+    }
+
+    .low-row {
+        background-color: rgba(0,255,0,0.10);
+    }
+
+    .critical-row {
+        background-color: rgba(255,0,0,0.35);
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="header">
+        <img src="/static/robin_logo.png" width="80">
+        <div>
+            <h1>R.O.B.I.N Security Dashboard</h1>
+            <p>Real-time Overight of Breaches, Incidents & Networks</p>
+        </div>
+    </div>
+
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>IP</th>
+            <th>Label</th>
+            <th>Profile</th>
+            <th>Risk</th>
+            <th>Services</th>
+            <th>High Count</th>
+        </tr>
+
+        {% for ip, data in devices.items() %}
+
+            <tr class="
+            {% if data.risk == 'HIGH' %}
+            high-row
+            {% elif data.risk == 'LOW' %}
+            low-row
+            {% elif data.risk == 'CRITICAL' %}
+            critical-row
+            {% endif %}
+            ">
+
+
+            <td>{{ ip }}</td>
+            <td>{{ data.get("label", "Unknown") }}</td>
+            <td>{{ data.get("profile", "Unknown") }}</td>
+            <td>{{ data.get("risk", "Unknown") }}</td>
+            <td>{{ data.get("services", []) }}</td>
+            <td>{{ data.get("high_count", 0) }}</td>
+
+            </tr>
+
+            {% endfor %}
+    </table>
+
+</body>
+</html>

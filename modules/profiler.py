@@ -2,6 +2,29 @@ def profile_device(device):
     ip = device.get("ip", "Unknown")
     services = device.get("services", [])
     label = device.get("label", "Unknown")
+    if label == "R.O.B.I.N Server":
+        profile = "Security Monitoring Server"
+
+    elif label == "Home Router":
+        profile = "Network Router"
+
+    elif label == "Living Room TV":
+        profile = "Smart TV"
+
+    elif label == "PlayStation":
+        profile = "Gaming Console"
+
+    elif "iPhone" in label:
+        profile = "Apple Device"
+
+    elif "Laptop" in label:
+        profile = "Personal Computer"
+
+    else:
+        profile = "Unknown Device"
+
+        device["profile"] = profile
+        return device
     print(f"[DEBUG] Label detected: {label}")
 
     profile = "Unknown Device"

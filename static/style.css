@@ -1,0 +1,48 @@
+body {
+    background: #0f172a;
+    color: #e5e7eb;
+    font-family: Arial, sans-serif;
+    padding: 25px;
+}
+
+h1 {
+    color: #38bdf8;
+    letter-spacing: 1px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #111827;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+th {
+    background: #1e293b;
+    color: #38bdf8;
+    padding: 12px;
+}
+
+td {
+    padding: 10px;
+    border: 1px solid #334155;
+}
+
+tr:hover {
+    background: #1f2937;
+}
+
+.risk-high {
+    color: #f97316;
+    font-weight: bold;
+}
+
+.risk-low {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+.risk-critical {
+    color: #ef4444;
+    font-weight: bold;
+}

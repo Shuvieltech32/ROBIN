@@ -231,6 +231,16 @@ def correlate_events(devices, known, new, history):
         repeated_high = record.get("high_count", 0) >= 2
         repeated_seen = record.get("count", 0) >= 3
 
+        # Count how many times this device has been risky
+        high_count = record.get("high_count", 0)
+
+        # Automatic risk escalation
+        if high_count >= 50:
+            device["risk"] = "CRITICAL"
+
+        elif high_count >= 10:
+            device["risk"] = "HIGH"
+
         # Event correlation:
         # new + unlabeled + repeated activity = CRITICAL
         if is_new and unlabeled and (repeated_high or repeated_seen):

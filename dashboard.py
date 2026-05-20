@@ -1,13 +1,45 @@
 from datetime import datetime
 from modules.firewall import ban_ip, unban_ip
-from flask import Flask, request, Response, redirect
+from flask import Flask, render_template, request, Response
 from dotenv import load_dotenv
 import json
 import os
+LABELS_FILE = "data/labels.json"
+
+def load_labels():
+    if not os.path.exists(LABELS_FILE):
+        return {}
+
+    with open(LABELS_FILE, "r") as f:
+        return json.load(f)
 
 load_dotenv()
 
 app = Flask(__name__)
+
+HISTORY_FILE = "data/device_history.json"
+
+def load_device():
+    if not os.path.exists(HISTORY_FILE):
+        return {}
+
+    with open(HISTORY_FILE, "r") as f:
+        return json.load(f)
+
+@app.route("/")
+def dashboard():
+    devices = load_device()
+    labels = load_labels()
+
+    from modules.profiler import profile_device
+
+    for ip, data in devices.items():
+        if isinstance(data, dict):
+            data["ip"] = ip
+            data["label"] = labels.get(ip, data.get("label", "Unknown"))
+            profile_device(data)
+
+    return render_template("dashboard.html", devices=devices)
 
 USERNAME = os.getenv("ROBIN_DASH_USER", "admin")
 PASSWORD = os.getenv("ROBIN_DASH_PASS", "password")
@@ -231,4 +263,4 @@ def unban(ip):
     return redirect("/")
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000)
+    app.run(host="0.0.0.0", port=5000)
