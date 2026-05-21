@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Investigate {{ ip }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Investigate Device: {{ ip }}</h1>
+
+    <p><strong>Label:</strong> {{ data.get("label", "Unknown") }}</p>
+    <p><strong>Profile:</strong> {{ data.get("profile", "Unknown") }}</p>
+    <p><strong>Risk:</strong> {{ data.get("risk", "Unknown") }}</p>
+    <p><strong>Services:</strong> {{ data.get("Services", []) }}</p>
+    <p><strong>High Count:</strong> {{ data.get("high_count", 0) }}</p>
+
+    <br>
+    <a class="action-link" href="/">← Back to Dashboard</a>
+</body>
+</html>

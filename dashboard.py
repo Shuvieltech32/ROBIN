@@ -250,6 +250,24 @@ def home():
     """
     return html
 
+@app.route("/investigate/<ip>")
+def investigate(ip):
+    devices = load_device()
+    labels = load_labels()
+
+    data = devices.get(ip, {})
+
+    if not isinstance(data, dict):
+        data = {}
+
+    data["ip"] = ip
+    data["label"] = labels.get(ip, data.get("label", "Unknown"))
+
+    from modules.profiler import profile_device
+    profile_device(data)
+
+    return render_template("investigate.html", ip=ip, data=data)
+
 
 @app.route("/ban/<ip>")
 def ban(ip):

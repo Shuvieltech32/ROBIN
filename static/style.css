@@ -46,3 +46,14 @@ tr:hover {
     color: #ef4444;
     font-weight: bold;
 }
+
+.action-link {
+    color: #38bdf8;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.action-link:hover {
+    color: #ffffff;
+    text-decoration: underline;

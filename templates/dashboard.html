@@ -69,6 +69,7 @@
             <th>Risk</th>
             <th>Services</th>
             <th>High Count</th>
+            <th>Actions</th>
         </tr>
 
         {% for ip, data in devices.items() %}
@@ -90,6 +91,7 @@
             <td>{{ data.get("risk", "Unknown") }}</td>
             <td>{{ data.get("services", []) }}</td>
             <td>{{ data.get("high_count", 0) }}</td>
+            <td><a href="/investigate/{{ ip }}">Investigate</a></td>
 
             </tr>
 
