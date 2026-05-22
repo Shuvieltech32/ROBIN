@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<html>
-<head>
+
+    <meta http-equiv="refresh" content="10">
+
     <title>R.O.B.I.N Dashboard</title>
 
     <style>
@@ -58,6 +59,11 @@
         <div>
             <h1>R.O.B.I.N Security Dashboard</h1>
             <p>Real-time Overight of Breaches, Incidents & Networks</p>
+
+            <p>Total Devices: {{ devices|length }}</p>
+            <p>Critical Devices: {{ critical_count }}</p>
+            <p>Trusted Devices: {{ trusted_count }}</p>
+
         </div>
     </div>
 
@@ -67,8 +73,11 @@
             <th>Label</th>
             <th>Profile</th>
             <th>Risk</th>
+            <th>Status</th>
+            <th>Reason</th>
             <th>Services</th>
             <th>High Count</th>
+            <th>Last Seen</th>
             <th>Actions</th>
         </tr>
 
@@ -89,9 +98,25 @@
             <td>{{ data.get("label", "Unknown") }}</td>
             <td>{{ data.get("profile", "Unknown") }}</td>
             <td>{{ data.get("risk", "Unknown") }}</td>
+            <td>{{ data.get("status", "NORMAL") }}</td>
+            <td>{{ data.get("reason", "No reason listed") }}</td>
             <td>{{ data.get("services", []) }}</td>
             <td>{{ data.get("high_count", 0) }}</td>
-            <td><a href="/investigate/{{ ip }}">Investigate</a></td>
+            <td>{{ data.get("last_seen", "Unknown") }}</td>
+
+            <td>
+                <a class="action-link investigate-btn"
+                   href="/investigate/{{ ip }}">Investigate</a>
+                |
+                <a class="action-link scan-btn" 
+                   href="/scan/{{ ip }}">Scan</a>
+                |
+                <a class="action-link" href="/trust/{{ ip }}">Trust</a>
+                |
+                <a class="action-link" href="/ignore/{{ ip }}">Ignore</a>
+                |
+                <a class="action-link" href="/ban/{{ ip }}">Ban</a>
+            </td>
 
             </tr>
 

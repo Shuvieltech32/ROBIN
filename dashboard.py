@@ -1,3 +1,5 @@
+from flask import redirect
+import subprocess
 from datetime import datetime
 from modules.firewall import ban_ip, unban_ip
 from flask import Flask, render_template, request, Response
@@ -39,7 +41,22 @@ def dashboard():
             data["label"] = labels.get(ip, data.get("label", "Unknown"))
             profile_device(data)
 
-    return render_template("dashboard.html", devices=devices)
+    critical_count = sum(
+        1 for d in devices.values()
+        if isinstance(d, dict) and d.get("risk") == "CRITICAL"
+    )
+
+    trusted_count = sum(
+        1 for d in devices.values()
+        if isinstance(d, dict) and d.get("status") == "TRUSTED"
+    )
+
+    return render_template(
+        "dashboard.html",
+        devices=devices,
+        critical_count=critical_count,
+        trusted_count=trusted_count
+    )
 
 USERNAME = os.getenv("ROBIN_DASH_USER", "admin")
 PASSWORD = os.getenv("ROBIN_DASH_PASS", "password")
@@ -268,6 +285,41 @@ def investigate(ip):
 
     return render_template("investigate.html", ip=ip, data=data)
 
+@app.route("/scan/<ip>")
+def scan_ip(ip):
+
+    result = subprocess.run(
+        ["nmap", "-sV", ip],
+        capture_output=True,
+        text=True,
+        timeout=120
+    )
+
+    lines = result.stdout.splitlines()
+
+    clean_lines = []
+
+    for line in lines:
+
+        if "SERVICE FINGERPRINT" in line:
+            break
+
+        if "please submit the following fingerprints" in line:
+            continue
+
+        if "SF:" in line:
+            continue
+
+        clean_lines.append(line)
+
+    output = "\n".join(clean_lines)
+
+    return render_template(
+        "scan_result.html",
+        ip=ip,
+        output=output
+
+    )
 
 @app.route("/ban/<ip>")
 def ban(ip):
@@ -282,3 +334,36 @@ def unban(ip):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+
+@app.route("/trust/<ip>")
+def trust_ip(ip):
+    labels = load_labels()
+    labels[ip] = "Trusted Device"
+
+    with open("data/labels.json", "w") as f:
+        json.dump(labels, f, indent=4)
+
+    return redirect("/")
+
+@app.route("/ignore/<ip>")
+def ignore_ip(ip):
+    history = load_device()
+
+    if ip in history:
+        history[ip]["status"] = "IGNORED"
+        history[ip]["risk"] = "LOW"
+        history[ip]["reason"] = "Operator ignored this device"
+
+    with open("data/device_history.json", "w") as f:
+        json.dump(history, f, indent=4)
+
+    return redirect("/")
+
+
+@app.route("/ban/<ip>")
+def dashboard_ban(ip):
+    ban_ip(ip)
+    return redirect("/")
+
+

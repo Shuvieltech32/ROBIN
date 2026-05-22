@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from modules.risk_engine import calculate_risk
 from modules.profiler import profile_device
 from modules.fingerprint import apply_fingerprints
 from modules.device_identity import enrich_devices
@@ -7,6 +8,7 @@ from modules.risk_engine import assign_risk
 from modules.firewall import ban_ip
 from modules.labels import load_labels
 import json
+import time
 import os
 from modules.history import load_history, save_history, update_history
 import subprocess
@@ -16,11 +18,31 @@ from datetime import datetime
 from modules.telegram_alert import send_telegram_alert
 import time
 
+ALERT_CACHE_FILE = "data/alert_cache.json"
+ALERT_COOLDOWN = 300  # 5 minutes
 BASELINE_FILE = "data/known_devices.json"
 LABELS_FILE = "data/labels.json"
 HISTORY_FILE = "data/history.json"
 LOG_FILE = "logs/robin.log"
 
+def shoould_alert(ip):
+    now = time.time()
+
+    if not os.path.exists(ALERT_CACHE_FILE):
+        cache = {}
+    else:
+        with open(ALERT_CACHE_FILE, "r") as f:
+            cache = json.load(f)
+
+    last_alert = cache.get(ip, 0)
+
+    if now - last_alert >= ALERT_COOLDOWN:
+        cache[ip] = now
+        with open(ALERT_CACHE_FILE, "w") as f:
+            json.dump(cache, f, indent=4)
+        return True
+
+    return False
 
 def get_default_interface():
     gateways = netifaces.gateways()
@@ -181,7 +203,7 @@ def assign_risk(device, new_devices):
         device["status"] = "INVESTIGATE"
         return "HIGH"
 
-    if device.get("risk") =="CRITICAL":
+    if device.get("risk") =="CRITICAL" and device.get("status") != "TRUSTED" and should_alert(ip):
         device["status"] = "CRITICAL"
         return "CRITICAL"
 
@@ -208,51 +230,25 @@ def correlate_events(devices, known, new, history):
         if not ip:
             continue
 
-        if device["risk"] == "CRITICAL":
+        risk, status, reason = calculate_risk(device, history)
 
-            print(f"[ALERT] {device['ip']} is CRITICAL")
+        device["risk"] = risk
+        device["status"] = status
+        device["reason"] = reason
+
+        if device.get("risk") == "CRITICAL" and device.get("status") != "TRUSTED":
+            print(f"[ALERT] {ip} is CRITICAL")
 
             send_telegram_alert(
-                f"   R.O.B.I.N ALERT\n\n"
-                f"IP: {device['ip']}\n"
-                f"Risk: CRITICAL\n"
-                f"Action Recommended: BAN"
+                f"R.O.B.I.N ALERT\n\nIP: {ip}\nRisk: {device.get('risk')}\nAction Recommended: BAN"
             )
 
             choice = input("Ban this device? (y/n): ")
 
-            if choice.lower() =="y":
+            if choice.lower() == "y":
                 ban_ip(ip)
 
-        record = history.get(ip, {})
-
-        is_new = device in new
-        unlabeled = not device.get("label")
-        repeated_high = record.get("high_count", 0) >= 2
-        repeated_seen = record.get("count", 0) >= 3
-
-        # Count how many times this device has been risky
-        high_count = record.get("high_count", 0)
-
-        # Automatic risk escalation
-        if high_count >= 50:
-            device["risk"] = "CRITICAL"
-
-        elif high_count >= 10:
-            device["risk"] = "HIGH"
-
-        # Event correlation:
-        # new + unlabeled + repeated activity = CRITICAL
-        if is_new and unlabeled and (repeated_high or repeated_seen):
-            device["risk"] = "CRITICAL"
-
-        # known but unlabeled and repeatedly suspicious = HIGH
-        elif device in known and unlabeled and repeated_high:
-            if device["risk"] != "CRITICAL":
-                device["risk"] = "HIGH"
-
     return devices
-
 
 def print_report(interface, cidr, devices, known, new):
     print("\n=== R.O.B.I.N. Module 1 Report ===")
@@ -397,7 +393,23 @@ def main():
                 ban_ip(ip)
 
     print("[+] Updating device history...")
-    update_history(devices)
+
+    for device in devices:
+        ip = device.get("ip")
+        if not ip:
+            continue
+
+        if ip not in history:
+            history[ip] = {}
+
+        history[ip]["reason"] = device.get("reason", "No reason listed")
+        history[ip]["status"] = device.get("status", "NORMAL")
+        history[ip]["profile"] = device.get("profile", "Unknown Device")
+        history[ip]["label"] = device.get("label", "Unknown")
+        history[ip]["risk"] = device.get("risk", "LOW")
+        history[ip]["last_seen"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    save_history(history)
 
     print("=== Scan Complete ===")
 

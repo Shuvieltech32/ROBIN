@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nmap Scan {{ ip }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        pre {
+            background-color: #111;
+            color: #00ff99;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(0,255,100,0.3);
+        }
+
+        .action-link {
+            color: #00d9ff;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Nmap Scan Result: {{ ip }}</h1>
+
+    <pre class="scan-output">
+    {{ output }}
+    </pre>
+
+    <br>
+    <a class="action-link" href="/investigate/{{ ip }}">← Back to Device</a>
+    <br><br>
+    <a class="action-link" href="/">
+        ← Back to Dashboard
+    </a>
+
+</body>
+</html>

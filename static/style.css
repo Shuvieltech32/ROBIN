@@ -48,12 +48,37 @@ tr:hover {
 }
 
 .action-link {
-    color: #38bdf8;
-    font-weight: bold;
+    color: #00e5ff;
     text-decoration: none;
-    cursor: pointer;
+    font-weight: bold;
+    padding: 4px 8px;
+    border: 1px solid #00e5ff;
+    border-radius: 6px;
+    margin-right: 5px;
+    transition: 0.3;
 }
 
 .action-link:hover {
-    color: #ffffff;
-    text-decoration: underline;
+    background-color: #00e5ff;
+    color: black;
+    box-shadow: 0 0 10px #00e5ff;
+}
+
+.action-link {
+    display: inline-block;
+    color: #00e5ff;
+    background-color: rgba(0, 229, 255, 0.1);
+    border: 1px solid #00e5ff;
+    border-radius: 6px;
+    padding: 4px 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin-right: 5px;
+}
+
+.action-link:hover {
+    background-color: #00e5ff;
+    color: black;
+    box-shadow: 0 0 10px #00e5ff;
+}
