@@ -24,6 +24,25 @@
         padding: 10px;
     }
 
+    a {
+        color: #00d9ff;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    a:visited {
+        color: #00d9ff;
+    }
+
+    a:hover {
+        color: #ffffff;
+        text-shadow: 0 0 5px #00d9ff;
+    }
+
+    a:active {
+        color: #00d9ff;
+    }
+
     th {
         background-color: #111827;
         color: #4fd1ff;
@@ -75,6 +94,8 @@
             <th>Risk</th>
             <th>Status</th>
             <th>Reason</th>
+            <th>Behavior</th>
+            <th>Threats</th>
             <th>Services</th>
             <th>High Count</th>
             <th>Last Seen</th>
@@ -100,7 +121,27 @@
             <td>{{ data.get("risk", "Unknown") }}</td>
             <td>{{ data.get("status", "NORMAL") }}</td>
             <td>{{ data.get("reason", "No reason listed") }}</td>
-            <td>{{ data.get("services", []) }}</td>
+            <td>{{ data.get("behavior_reason","None") }}</td>
+
+            <td>
+            {% if data.get("threats") %}
+                {% for threat in data.get("threats") %}
+                    {{ threat.service }} ({{ threat.risk }})<br>
+                {% endfor %}
+            {% else %}
+                None
+            {% endif %}
+            </td>
+
+            <td>
+            {% if data.get("services") %}
+                {% for service in data.get("services") %}
+                    {{ service }}<br>
+                {% endfor %}
+            {% else %}
+                None
+            {% endif %}
+            </td>
             <td>{{ data.get("high_count", 0) }}</td>
             <td>{{ data.get("last_seen", "Unknown") }}</td>
 
@@ -116,6 +157,8 @@
                 <a class="action-link" href="/ignore/{{ ip }}">Ignore</a>
                 |
                 <a class="action-link" href="/ban/{{ ip }}">Ban</a>
+                |
+                <a class"action-link" href="/unban/{{ ip }}">Unban</a>
             </td>
 
             </tr>

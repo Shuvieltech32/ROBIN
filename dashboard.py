@@ -61,6 +61,35 @@ def dashboard():
 USERNAME = os.getenv("ROBIN_DASH_USER", "admin")
 PASSWORD = os.getenv("ROBIN_DASH_PASS", "password")
 
+@app.route("/trust/<ip>")
+def trust_ip(ip):
+    labels = load_labels()
+
+    labels[ip] = "Trusted Device"
+
+    with open("data/labels.json", "w") as f:
+        json.dump(labels, f, indent=4)
+
+    return redirect("/")
+
+@app.route("/ignore/<ip>")
+def ignore_ip(ip):
+    history = load_device()
+
+    if ip in history:
+        history[ip]["status"] = "IGNORED"
+        history[ip]["risk"] = "LOW"
+        history[ip]["reason"] = "Operator ignored this device"
+
+    with open("data/device_history.json", "w") as f:
+        json.dump(history, f, indent=4)
+
+    return redirect("/")
+
+@app.route("/ban/<ip>")
+def dashboard_ban(ip):
+    ban_ip(ip)
+    return redirect("/")
 
 def check_auth(username, password):
     return username == USERNAME and password == PASSWORD
@@ -334,36 +363,3 @@ def unban(ip):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
-
-@app.route("/trust/<ip>")
-def trust_ip(ip):
-    labels = load_labels()
-    labels[ip] = "Trusted Device"
-
-    with open("data/labels.json", "w") as f:
-        json.dump(labels, f, indent=4)
-
-    return redirect("/")
-
-@app.route("/ignore/<ip>")
-def ignore_ip(ip):
-    history = load_device()
-
-    if ip in history:
-        history[ip]["status"] = "IGNORED"
-        history[ip]["risk"] = "LOW"
-        history[ip]["reason"] = "Operator ignored this device"
-
-    with open("data/device_history.json", "w") as f:
-        json.dump(history, f, indent=4)
-
-    return redirect("/")
-
-
-@app.route("/ban/<ip>")
-def dashboard_ban(ip):
-    ban_ip(ip)
-    return redirect("/")
-
-

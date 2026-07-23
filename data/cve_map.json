@@ -3,54 +3,63 @@
          "service": "ftp",
          "risk": "HIGH",
          "notes": "FTP can expose credentials or allow weak authentication.",
-         "recommendation": "Disable FTP if unused or replace with SFTP."
+         "recommendation": "Disable FTP if unused or replace with SFTP.",
+         "cves": []
      },
      "22": {
          "service": "ssh",
          "risk": "MEDIUM",
          "notes": "SSH is normal for admin access but should be restricted.",
-         "recommendation": "Use key-based login, disable password login, and limit access."
+         "recommendation": "Use key-based login, disable password login, and limit access.",
+         "cves": []
      },
      "23": {
          "service": "telnet",
          "risk": "CRITICAL",
          "notes": "Telnet sends credentials in clear text.",
-         "recommendation": "Disable Telnet immediately."
+         "recommendation": "Disable Telnet immediately.",
+         "cves": []
      },
      "53": {
          "service": "dns",
          "risk": "LOW",
          "notes": "DNS is normal on routers but should not be exposed unnecessarily.",
-         "recommendation": "Confirm this is only available internally."
+         "recommendation": "Confirm this is only available internally.",
+         "cves": []
      },
      "80": {
          "service": "http",
          "risk": "MEDIUM",
          "notes": "HTTP may expose web admin panels or unencrypted traffic.",
-         "recommendation": "Use HTTPS and restrict admin access."
+         "recommendation": "Use HTTPS and restrict admin access.",
+         "cves": []
      },
      "443": {
           "service": "https",
           "risk": "LOW",
           "notes": "HTTPS is common, but exposed admin panels should still be reviewed.",
-          "recommendation": "Confirm certificate, authentication, and access control."
+          "recommendation": "Confirm certificate, authentication, and access control.",
+          "cves": []
      },
      "445": {
           "service": "smb",
           "risk": "HIGH",
           "notes": "SMB is commonly targeted for lateral movement and ransomware.",
-          "recommendation": "Disable if unused and restrict to trusted local devices."
+          "recommendation": "Disable if unused and restrict to trusted local devices.",
+          "cves": []
      },
      "3389": {
            "service": "rdp",
            "risk": "CRITICAL",
            "notes": "RDP is a high-value target for brute force and remote access attacks.",
-           "recommendation": "Disable internet exposure and require VPN/MFA."
+           "recommendation": "Disable internet exposure and require VPN/MFA.",
+           "cves": []
      },
      "5000": {
            "service": "upnp/http",
            "risk": "HIGH",
            "notes": "UPnP or web services can expose device control interfaces.",
-           "recommendation": "Disable UPnP if not needed and review the service owner."
+           "recommendation": "Disable UPnP if not needed and review the service owner.",
+           "cves": []
      }
 }

@@ -61,9 +61,9 @@ def calculate_risk(device, history):
         reasons.append("Frequently seen device")
 
     # Final risk calculation
-    if score >= 50:
+    if score >= 20:
         risk = "CRITICAL"
-    elif score >= 25:
+    elif score >= 10:
         risk = "HIGH"
     else:
         risk = "LOW"

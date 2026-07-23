@@ -23,7 +23,6 @@ def send_telegram_alert(message):
         response = requests.post(url, data=payload)
 
         print("Status:", response.status_code)
-        print("Response:", response.text)
 
         if response.status_code == 200:
             print("[+] Telegram alert sent")

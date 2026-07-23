@@ -7,7 +7,22 @@ def ban_ip(ip, method="iptables"):
     if method == "iptables":
 
         try:
-    
+
+            check_rule = subprocess.run([
+                "sudo",
+                "iptables",
+                "-C",
+                "INPUT",
+                "-s",
+                ip,
+                "-j",
+                "DROP"
+            ], capture_output=True)
+
+            if check_rule.returncode == 0:
+                print(f"[!] {ip} already banned")
+                return True
+
             subprocess.run([
                 "sudo",
                 "iptables",

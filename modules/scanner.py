@@ -7,10 +7,16 @@ from modules.alerts import critical_alert, detect_new_device, critical_threat_al
 from modules.risk_engine import assign_risk
 from modules.firewall import ban_ip
 from modules.labels import load_labels
+from modules.behavior import (
+    detect_behavior_changes,
+    apply_behavior_risk,
+)
+
 import json
 import time
 import os
 from modules.history import load_history, save_history, update_history
+from modules.threat_intel import analyze_services
 import subprocess
 import re
 import netifaces
@@ -73,6 +79,52 @@ def run_nmap_scan(target_cidr):
     cmd = ["nmap", "-sn", target_cidr]
     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return result.stdout
+
+
+def scan_device_services(ip):
+    """Scan common ports and return Nmap-style service lines."""
+    cmd = [
+        "nmap",
+        "-sV",
+        "--version-light",
+        "--top-ports",
+        "100",
+        "-T4",
+        ip
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=90
+        )
+    except subprocess.TimeoutExpired:
+        print(f"[WARNING] Service scan timed out for {ip}")
+        return []
+    except subprocess.CalledProcessError as error:
+        print(f"[WARNING] Service scan failed for {ip}: {error}")
+        return []
+
+    services = []
+
+    for line in result.stdout.splitlines():
+        line = line.strip()
+
+        # Matches lines such as:
+        # 80/tcp open http Apache httpd
+        parts = line.split()
+
+        if (
+            len(parts) >= 3
+            and "/" in parts[0]
+            and parts[1] == "open"
+        ):
+            services.append(line)
+
+    return services
 
 
 def parse_nmap_output(output):
@@ -317,6 +369,20 @@ def main():
     scan_output = run_nmap_scan(cidr)
     devices = parse_nmap_output(scan_output)
     devices = enrich_devices(devices)
+
+    print("[+] Running service detection...")
+
+    for device in devices:
+        ip = device.get("ip")
+
+        if not ip:
+            device["services"] = []
+            continue
+
+        print(f"[+] Scanning services on {ip}...")
+        device["services"] = scan_device_services(ip)
+        print(f"[+] Found services: {device['services']}")
+
     devices = apply_fingerprints(devices)
 
     labels = load_labels()
@@ -402,11 +468,42 @@ def main():
         if ip not in history:
             history[ip] = {}
 
+        previous = history.get(ip, {}).copy()
+
         history[ip]["reason"] = device.get("reason", "No reason listed")
         history[ip]["status"] = device.get("status", "NORMAL")
         history[ip]["profile"] = device.get("profile", "Unknown Device")
         history[ip]["label"] = device.get("label", "Unknown")
         history[ip]["risk"] = device.get("risk", "LOW")
+
+        print(f"[DEBUG] {ip} services: {device.get('services', [])}")
+
+        services = device.get("services", [])
+        threats = analyze_services(services)
+
+        history[ip]["services"] = services
+        history[ip]["threats"] = threats
+
+        events = detect_behavior_changes(device, previous)
+        history[ip]["behavior_events"] = events
+
+        behavior_risk, behavior_reason = apply_behavior_risk(
+            device.get("risk", "LOW"),
+            events,
+        )
+
+        device["risk"] = behavior_risk
+        device["behavior_reason"] = behavior_reason
+
+        history[ip]["risk"] = behavior_risk
+        history[ip]["behavior_reason"] = behavior_reason
+
+        if events:
+            print(f"[BEHAVIOR] {ip}")
+
+            for event in events:
+                print(f"    {event['type']} -> {event['message']}")
+
         history[ip]["last_seen"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     save_history(history)
