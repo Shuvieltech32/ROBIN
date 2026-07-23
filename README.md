@@ -46,26 +46,57 @@ Planned features include:
 - Advanced reporting and analytics
 
 
-## Phase 4 Features
+## Current Status
 
-- Real-time Flask dashboard
-- Risk scoring engine
-- Trusted device recognition
-- Telegram alerting
-- Historical tracking
-- Nmap scan integration
+✅ Phase 1 – Network Discovery (Complete)
+
+- Network scanning
+- Device discovery
+- Device inventory
+- Baseline creation
+
+✅ Phase 2 – Device Identification (Complete)
+
+- Device labeling
+- Device fingerprinting
+- Vendor identification
 - Device profiling
-- Operator actions
-- Firewall banning
-- Alert suppression
-- Investigate pages
-- Last seen tracking
-- Threat reasoning system
-- Live dashboard auto-refresh
+
+✅ Phase 3 – Risk Analysis (Complete)
+
+- Risk engine
+- Trusted devices
+- Critical device detection
+- Telegram notifications
+- Dashboard integration
+
+✅ Phase 4 – Threat Intelligence (Complete)
+
+- Local threat intelligence database
+- Service-to-threat mapping
+- CVE mapping framework
+- Threat classification
+- Historical device tracking
+
+✅ Phase 5 – Intelligent Threat Detection (Complete)
+
+- Nmap service/version detection
+- Behavioral analysis engine
+- New device detection
+- Opened/closed service detection
+- Hostname change detection
+- MAC address change detection
+- Vendor change detection
+- Behavior-based risk escalation
+- Dashboard behavior tracking
+- Service history tracking
+- Threat history tracking
+- Telegram alert integration
+- Interactive investigation dashboard
 
 ---
 
-# Technologies Used
+# Technologies
 
 - Python 3
 - Flask
@@ -75,6 +106,53 @@ Planned features include:
 - JSON-based threat intelligence
 - Fail2Ban
 - UFW firewall
+- Telegram Bot API
+- HTML
+- CSS
+---
+
+## Future Roadmap
+
+#  Phase 6 – Incident Response
+
+- Incident management
+- Automated response policies
+- Auto-remediation
+- Reporting
+- Evidence collection
+- Timeline reconstruction
+
+#  Phase 7 – AI Threat Analysis
+
+- AI-assisted anomaly detection
+- Threat prediction
+- Intelligent recommendations
+- Attack correlation
+
+#  Phase 8 – Enterprise Features
+
+- Multi-user authentication
+- SIEM integration
+- API support
+- Enterprise reporting
+
+---
+
+## Dashboard
+
+![ROBIN Dashboard](images/dashboard.png)
+
+## Terminal Scan
+
+![Terminal Scan](images/terminal_scan.png)
+
+## Telegram Alerts 
+
+![Telegram Alert](images/telegram_alert.png)
+
+## Investigate Page
+
+![Investigate](images/investigate_page.png)
 
 ---
 
