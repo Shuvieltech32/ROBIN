@@ -1,0 +1,164 @@
+[
+    {
+        "incident_id": "686f2f0e-c65b-4ceb-b6d1-810987a64383",
+        "title": "CRITICAL risk device detected",
+        "description": "ROBIN detected a CRITICAL risk device at 192.168.4.20. Reason: Unknown device. Behavior: No behavior-based escalation..",
+        "severity": "CRITICAL",
+        "status": "OPEN",
+        "source": "ROBIN Detection Engine",
+        "ip_address": "192.168.4.20",
+        "device_label": "Unknown",
+        "created_at": "2026-07-25T16:15:11",
+        "updated_at": "2026-07-25T16:15:11",
+        "evidence": {
+            "risk": "CRITICAL",
+            "device_status": "NORMAL",
+            "reason": "Unknown device",
+            "behavior_reason": "No behavior-based escalation.",
+            "services": [
+                "49152/tcp open  tcpwrapped"
+            ],
+            "threats": [],
+            "hostname": "Unknown",
+            "vendor": "Generic Device",
+            "mac": "16:c9:63:a8:79:39"
+        },
+        "timeline": [
+            {
+                "timestamp": "2026-07-25T16:15:11",
+                "action": "Incident created",
+                "details": "ROBIN detected a CRITICAL risk device at 192.168.4.20. Reason: Unknown device. Behavior: No behavior-based escalation.."
+            }
+        ]
+    },
+    {
+        "incident_id": "33cc25a0-faad-4152-9b18-379f4865fecb",
+        "title": "CRITICAL risk device detected",
+        "description": "ROBIN detected a CRITICAL risk device at 192.168.4.23. Reason: Unknown device. Behavior: No behavior-based escalation..",
+        "severity": "CRITICAL",
+        "status": "OPEN",
+        "source": "ROBIN Detection Engine",
+        "ip_address": "192.168.4.23",
+        "device_label": "Unknown",
+        "created_at": "2026-07-25T16:15:11",
+        "updated_at": "2026-07-25T17:22:22",
+        "evidence": {
+            "risk": "CRITICAL",
+            "device_status": "NORMAL",
+            "reason": "Unknown device",
+            "behavior_reason": "No behavior-based escalation.",
+            "services": [
+                "5000/tcp open  rtsp"
+            ],
+            "threats": [],
+            "hostname": "Unknown",
+            "vendor": "Generic Device",
+            "mac": "b2:e1:f8:03:39:fc"
+        },
+        "timeline": [
+            {
+                "timestamp": "2026-07-25T16:15:11",
+                "action": "Incident created",
+                "details": "ROBIN detected a CRITICAL risk device at 192.168.4.23. Reason: Unknown device. Behavior: No behavior-based escalation.."
+            },
+            {
+                "timestamp": "2026-07-25T17:22:22",
+                "action": "Incident evidence updated",
+                "details": "New evidence collected during a later scan."
+            }
+        ]
+    },
+    {
+        "incident_id": "a57b3a64-6e83-4443-ae05-a4f5d7cba357",
+        "title": "CRITICAL risk device detected",
+        "description": "ROBIN detected a CRITICAL risk device at 192.168.4.27. Reason: Unknown device. Behavior: No behavior-based escalation..",
+        "severity": "CRITICAL",
+        "status": "OPEN",
+        "source": "ROBIN Detection Engine",
+        "ip_address": "192.168.4.27",
+        "device_label": "Unknown",
+        "created_at": "2026-07-25T16:15:11",
+        "updated_at": "2026-07-25T17:22:22",
+        "evidence": {
+            "risk": "CRITICAL",
+            "device_status": "NORMAL",
+            "reason": "Unknown device",
+            "behavior_reason": "No behavior-based escalation.",
+            "services": [
+                "80/tcp   open  http    Apache httpd 2.4.58 ((Ubuntu))",
+                "5000/tcp open  upnp?"
+            ],
+            "threats": [],
+            "hostname": "r-o-b-i-n-Parallels-ARM-Virtual-Machine",
+            "vendor": "Unknown",
+            "mac": "Unknown"
+        },
+        "timeline": [
+            {
+                "timestamp": "2026-07-25T16:15:11",
+                "action": "Incident created",
+                "details": "ROBIN detected a CRITICAL risk device at 192.168.4.27. Reason: Unknown device. Behavior: No behavior-based escalation.."
+            },
+            {
+                "timestamp": "2026-07-25T17:22:22",
+                "action": "Incident evidence updated",
+                "details": "New evidence collected during a later scan."
+            }
+        ]
+    },
+    {
+        "incident_id": "c00d547a-4e9f-474f-9fdb-20d590e3c58b",
+        "title": "CRITICAL risk device detected",
+        "description": "ROBIN detected a CRITICAL risk device at 192.168.4.46. Reason: Unknown device. Behavior: No behavior-based escalation..",
+        "severity": "CRITICAL",
+        "status": "OPEN",
+        "source": "ROBIN Detection Engine",
+        "ip_address": "192.168.4.46",
+        "device_label": "Unknown",
+        "created_at": "2026-07-25T16:15:11",
+        "updated_at": "2026-07-25T17:47:29",
+        "evidence": {
+            "risk": "CRITICAL",
+            "device_status": "NORMAL",
+            "reason": "Unknown device",
+            "behavior_reason": "No behavior-based escalation.",
+            "services": [],
+            "threats": [],
+            "hostname": "Unknown",
+            "vendor": "Generic Device",
+            "mac": "3a:66:e2:34:8b:ad"
+        },
+        "timeline": [
+            {
+                "timestamp": "2026-07-25T16:15:11",
+                "action": "Incident created",
+                "details": "ROBIN detected a CRITICAL risk device at 192.168.4.46. Reason: Unknown device. Behavior: No behavior-based escalation.."
+            },
+            {
+                "timestamp": "2026-07-25T17:46:38",
+                "action": "Status changed from OPEN to OPEN",
+                "details": "Status changed from the ROBIN dashboard."
+            },
+            {
+                "timestamp": "2026-07-25T17:46:42",
+                "action": "Status changed from OPEN to INVESTIGATING",
+                "details": "Status changed from the ROBIN dashboard."
+            },
+            {
+                "timestamp": "2026-07-25T17:46:48",
+                "action": "Status changed from INVESTIGATING to CONTAINED",
+                "details": "Status changed from the ROBIN dashboard."
+            },
+            {
+                "timestamp": "2026-07-25T17:46:54",
+                "action": "Status changed from CONTAINED to RESOLVED",
+                "details": "Status changed from the ROBIN dashboard."
+            },
+            {
+                "timestamp": "2026-07-25T17:47:29",
+                "action": "Status changed from RESOLVED to OPEN",
+                "details": "Status changed from the ROBIN dashboard."
+            }
+        ]
+    }
+]

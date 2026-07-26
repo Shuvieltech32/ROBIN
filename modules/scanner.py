@@ -11,7 +11,7 @@ from modules.behavior import (
     detect_behavior_changes,
     apply_behavior_risk,
 )
-
+from modules.incidents import create_incident
 import json
 import time
 import os
@@ -497,6 +497,45 @@ def main():
 
         history[ip]["risk"] = behavior_risk
         history[ip]["behavior_reason"] = behavior_reason
+
+        final_risk = str(device.get("risk", "LOW")).upper()
+
+        if final_risk in {"HIGH", "CRITICAL"}:
+            incident_title = f"{final_risk} risk device detected"
+
+            incident_description = (
+                     f"ROBIN detected a {final_risk} risk device at {ip}. "
+                     f"Reason: {device.get('reason', 'No reason provided')}. "
+                     f"Behavior: {device.get('behavior_reason', 'None')}."
+            )
+
+            try:
+                create_incident(
+                    ip_address=ip,
+                    severity=final_risk,
+                    title=incident_title,
+                    description=incident_description,
+                    device_label=device.get("label", "Unknown"),
+                    evidence={
+                        "risk": final_risk,
+                        "device_status": device.get("status", "UNKNOWN"),
+                        "reason": device.get("reason", ""),
+                        "behavior_reason": device.get(
+                            "behavior_reason",
+                            "",
+                        ),
+                        "services": device.get("services", []),
+                        "threats": device.get("threats", []),
+                        "hostname": device.get("hostname", ""),
+                        "vendor": device.get("vendor", ""),
+                        "mac": device.get("mac", ""),
+                    },
+                )
+            except Exception as error:
+                print(
+                    f"[INCIDENT ERROR] Could not create "
+                    f"incident for {ip}: {error}"
+                )
 
         if events:
             print(f"[BEHAVIOR] {ip}")

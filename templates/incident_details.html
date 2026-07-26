@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ROBIN Incident Details</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #06152b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        h1,
+        h2 {
+            color: #32e6ff;
+        }
+
+        .navigation {
+            margin-bottom: 25px;
+        }
+
+        .navigation a {
+            margin-right: 18px;
+            color: #32e6ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .panel {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            border-radius: 8px;
+        }
+
+        .critical {
+            color: #ff4d5a;
+            font-weight: bold;
+        }
+
+        .high {
+            color: #ffae42;
+            font-weight: bold;
+        }
+
+        .status-button {
+            margin: 5px;
+            padding: 10px 14px;
+            border: 1px solid #32e6ff;
+            border-radius: 5px;
+            background: transparent;
+            color: #32e6ff;
+            cursor: pointer;
+        }
+
+        .status-button:hover {
+            background: #32e6ff;
+            color: #06152b;
+        }
+
+        pre {
+            padding: 15px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            background: #041020;
+            border: 1px solid #284b70;
+        }
+
+        .timeline-entry {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #071a32;
+            border-left: 4px solid #32e6ff;
+        }
+
+.evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(220px, 1fr)
+    );
+    gap: 15px;
+}
+
+.evidence-card {
+    padding: 15px;
+    background: #071a32;
+    border: 1px solid #284b70;
+    border-radius: 7px;
+}
+
+.evidence-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #32e6ff;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.evidence-value {
+    overflow-wrap: anywhere;
+    font-size: 16px;
+}
+
+.evidence-list {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.evidence-list li {
+    margin-bottom: 7px;
+}
+
+.no-data {
+    color: #a9b8c8;
+    font-style: italic;
+}
+
+.risk-critical {
+    color: #ff4d5a;
+    font-weight: bold;
+}
+
+.risk-high {
+    color: #ffae42;
+    font-weight: bold;
+}
+
+.risk-medium {
+    color: #ffe066;
+    font-weight: bold;
+}
+
+.risk-low {
+    color: #60e890;
+    font-weight: bold;
+}
+
+    </style>
+</head>
+
+<body>
+    <div class="navigation">
+        <a href="/">Devices</a>
+        <a href="/incidents">All Incidents</a>
+    </div>
+
+    <h1>Incident Details</h1>
+
+    <div class="panel">
+        <p>
+            <strong>Incident ID:</strong>
+            {{ incident.get("incident_id") }}
+        </p>
+
+        <p>
+            <strong>Title:</strong>
+            {{ incident.get("title") }}
+        </p>
+
+        <p>
+            <strong>Severity:</strong>
+
+            <span
+                class="{{ incident.get('severity', '').lower() }}"
+            >
+                {{ incident.get("severity") }}
+            </span>
+        </p>
+
+        <p>
+            <strong>Status:</strong>
+            {{ incident.get("status") }}
+        </p>
+
+        <p>
+            <strong>IP Address:</strong>
+            {{ incident.get("ip_address") }}
+        </p>
+
+        <p>
+            <strong>Device:</strong>
+            {{ incident.get("device_label") }}
+        </p>
+
+        <p>
+            <strong>Created:</strong>
+            {{ incident.get("created_at") }}
+        </p>
+
+        <p>
+            <strong>Last Updated:</strong>
+            {{ incident.get("updated_at") }}
+        </p>
+
+        <p>
+            <strong>Description:</strong>
+            {{ incident.get("description") }}
+        </p>
+    </div>
+
+    <div class="panel">
+        <h2>Incident Status</h2>
+
+        <form
+            action="/incidents/{{ incident.get('incident_id') }}/status/OPEN"
+            method="post"
+            style="display: inline;"
+        >
+            <button class="status-button" type="submit">
+                Open
+            </button>
+        </form>
+
+        <form
+            action="/incidents/{{ incident.get('incident_id') }}/status/INVESTIGATING"
+            method="post"
+            style="display: inline;"
+        >
+            <button class="status-button" type="submit">
+                Investigating
+            </button>
+        </form>
+
+        <form
+            action="/incidents/{{ incident.get('incident_id') }}/status/CONTAINED"
+            method="post"
+            style="display: inline;"
+        >
+            <button class="status-button" type="submit">
+                Contained
+            </button>
+        </form>
+
+        <form
+            action="/incidents/{{ incident.get('incident_id') }}/status/RESOLVED"
+            method="post"
+            style="display: inline;"
+        >
+            <button class="status-button" type="submit">
+                Resolved
+            </button>
+        </form>
+    </div>
+
+{% set evidence = incident.get("evidence", {}) %}
+
+<div class="panel">
+    <h2>Device Evidence</h2>
+
+    <div class="evidence-grid">
+        <div class="evidence-card">
+            <span class="evidence-label">Risk</span>
+
+            <span
+                class="evidence-value risk-{{ evidence.get('risk', 'unknown') | lower }}"
+            >
+                {{ evidence.get("risk", "Unknown") }}
+            </span>
+        </div>
+
+        <div class="evidence-card">
+            <span class="evidence-label">
+                Device Status
+            </span>
+
+            <span class="evidence-value">
+                {{ evidence.get("device_status", "Unknown") }}
+            </span>
+        </div>
+
+        <div class="evidence-card">
+            <span class="evidence-label">Reason</span>
+
+            <span class="evidence-value">
+                {{ evidence.get("reason", "No reason recorded") }}
+            </span>
+        </div>
+
+        <div class="evidence-card">
+            <span class="evidence-label">
+                Behavior
+            </span>
+
+            <span class="evidence-value">
+                {{
+                    evidence.get(
+                        "behavior_reason",
+                        "No behavior information"
+                    )
+                }}
+            </span>
+        </div>
+
+        <div class="evidence-card">
+            <span class="evidence-label">Hostname</span>
+
+            <span class="evidence-value">
+                {{ evidence.get("hostname", "Unknown") }}
+            </span>
+        </div>
+
+        <div class="evidence-card">
+            <span class="evidence-label">Vendor</span>
+
+            <span class="evidence-value">
+                {{ evidence.get("vendor", "Unknown") }}
+            </span>
+        </div>
+
+        <div class="evidence-card">
+            <span class="evidence-label">
+                MAC Address
+            </span>
+
+            <span class="evidence-value">
+                {{ evidence.get("mac", "Unknown") }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <h2>Detected Services</h2>
+
+    {% set services = evidence.get("services", []) %}
+
+    {% if services %}
+        <ul class="evidence-list">
+            {% for service in services %}
+                <li>{{ service }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-data">
+            No services were recorded for this incident.
+        </p>
+    {% endif %}
+</div>
+
+<div class="panel">
+    <h2>Threat Intelligence</h2>
+
+    {% set threats = evidence.get("threats", []) %}
+
+    {% if threats %}
+        <ul class="evidence-list">
+            {% for threat in threats %}
+                <li>
+                    {% if threat is mapping %}
+                        {{ threat | tojson }}
+                    {% else %}
+                        {{ threat }}
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-data">
+            No known threats were recorded for this incident.
+        </p>
+    {% endif %}
+</div>
+
+<div class="panel">
+    <h2>Incident Timeline</h2>
+
+    {% for entry in incident.get("timeline", []) %}
+        <div class="timeline-entry">
+            <strong>{{ entry.get("timestamp", "Unknown time") }}</strong>
+            <br>
+            {{ entry.get("action", "Unknown action") }}
+
+            {% if entry.get("details") %}
+                <br>
+                <small>{{ entry.get("details") }}</small>
+            {% endif %}
+        </div>
+    {% else %}
+        <p class="no-data">
+            No timeline entries have been recorded.
+        </p>
+    {% endfor %}
+</div>
+
+</body>
+</html>
+

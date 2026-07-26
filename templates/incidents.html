@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ROBIN Incidents</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #06152b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #32e6ff;
+        }
+
+        .navigation {
+            margin-bottom: 25px;
+        }
+
+        .navigation a {
+            margin-right: 18px;
+            color: #32e6ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #0b2342;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #284b70;
+            text-align: left;
+        }
+
+        th {
+            background: #102f56;
+            color: #32e6ff;
+        }
+
+        .critical {
+            color: #ff4d5a;
+            font-weight: bold;
+        }
+
+        .high {
+            color: #ffae42;
+            font-weight: bold;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .view-button {
+            display: inline-block;
+            padding: 7px 12px;
+            border: 1px solid #32e6ff;
+            border-radius: 5px;
+            color: #32e6ff;
+            text-decoration: none;
+        }
+
+        .view-button:hover {
+            background: #32e6ff;
+            color: #06152b;
+        }
+
+        .empty-message {
+            padding: 20px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navigation">
+        <a href="/">Devices</a>
+        <a href="/incidents">Incidents</a>
+    </div>
+
+    <h1>ROBIN Incident Management</h1>
+
+    {% if incidents %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>IP Address</th>
+                    <th>Device</th>
+                    <th>Title</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for incident in incidents %}
+                    <tr>
+                        <td
+                            class="{{ incident.get('severity', '').lower() }}"
+                        >
+                            {{ incident.get("severity", "UNKNOWN") }}
+                        </td>
+
+                        <td class="status">
+                            {{ incident.get("status", "UNKNOWN") }}
+                        </td>
+
+                        <td>
+                            {{ incident.get("ip_address", "Unknown") }}
+                        </td>
+
+                        <td>
+                            {{ incident.get("device_label", "Unknown") }}
+                        </td>
+
+                        <td>
+                            {{ incident.get(
+                                "title",
+                                "Untitled Incident"
+                            ) }}
+                        </td>
+
+                        <td>
+                            {{ incident.get("created_at", "Unknown") }}
+                        </td>
+
+                        <td>
+                            <a
+                                class="view-button"
+                                href="/incidents/{{ incident.get('incident_id') }}"
+                            >
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-message">
+            No incidents have been recorded.
+        </div>
+    {% endif %}
+</body>
+</html>

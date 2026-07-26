@@ -2,8 +2,13 @@ from flask import redirect
 import subprocess
 from datetime import datetime
 from modules.firewall import ban_ip, unban_ip
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response,  url_for
 from dotenv import load_dotenv
+from modules.incidents import (
+    get_incident,
+    load_incidents,
+    update_incident_status,
+)
 import json
 import os
 LABELS_FILE = "data/labels.json"
@@ -360,6 +365,58 @@ def ban(ip):
 def unban(ip):
     unban_ip(ip, method="fail2ban")
     return redirect("/")
+
+@app.route("/incidents")
+def incident_list():
+    incidents = load_incidents()
+
+    incidents.sort(
+        key=lambda incident: incident.get("created_at", ""),
+        reverse=True,
+    )
+
+    return render_template(
+        "incidents.html",
+        incidents=incidents,
+    )
+
+
+@app.route("/incidents/<incident_id>")
+def incident_details(incident_id):
+    incident = get_incident(incident_id)
+
+    if incident is None:
+        return "Incident not found", 404
+
+    return render_template(
+        "incident_details.html",
+        incident=incident,
+    )
+
+
+@app.route(
+    "/incidents/<incident_id>/status/<new_status>",
+    methods=["POST"],
+)
+def change_incident_status(incident_id, new_status):
+    try:
+        updated_incident = update_incident_status(
+            incident_id=incident_id,
+            new_status=new_status,
+            notes="Status changed from the ROBIN dashboard.",
+        )
+    except ValueError as error:
+        return str(error), 400
+
+    if updated_incident is None:
+        return "Incident not found", 404
+
+    return redirect(
+        url_for(
+            "incident_details",
+            incident_id=incident_id,
+        )
+    )
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
