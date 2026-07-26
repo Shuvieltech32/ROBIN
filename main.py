@@ -1,5 +1,6 @@
 from modules.scanner import main as scan_main
 from modules.alerts import detect_new_device
+from modules.incidents import create_incident
 import time
 
 def run():

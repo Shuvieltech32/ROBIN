@@ -7,3 +7,7 @@ data/known_devices.json
 data/labels.json
 logs/
 .env
+
+data/incidents.json
+data/incidents_backup.json
+images/temp.png

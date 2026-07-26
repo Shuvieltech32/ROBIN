@@ -1,0 +1,10 @@
+[
+  {
+    "incident_id": "example-id",
+    "title": "Example Incident",
+    "severity": "HIGH",
+    "status": "OPEN",
+    "ip_address": "192.168.x.x",
+    "device_label": "Example Device"
+  }
+]
