@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ROBIN Threat Hunting</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #06152b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #32e6ff;
+        }
+
+        .navigation {
+            margin-bottom: 25px;
+        }
+
+        .navigation a {
+            margin-right: 18px;
+            color: #32e6ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .finding-card {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            border-radius: 8px;
+        }
+
+        .finding-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .finding-title {
+            margin: 0;
+            color: #32e6ff;
+        }
+
+        .severity-badge {
+            padding: 7px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .severity-critical {
+            background: #7d1720;
+            color: #ffb3b9;
+        }
+
+        .severity-high {
+            background: #6b3b00;
+            color: #ffd199;
+        }
+
+        .severity-medium {
+            background: #665800;
+            color: #fff2a3;
+        }
+
+        .severity-low {
+            background: #124c2c;
+            color: #9af0b8;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(180px, 1fr)
+            );
+            gap: 12px;
+            margin: 18px 0;
+        }
+
+        .detail-item {
+            padding: 12px;
+            background: #071a32;
+            border: 1px solid #284b70;
+            border-radius: 6px;
+        }
+
+        .detail-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #32e6ff;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .recommendation {
+            margin-top: 16px;
+            padding: 14px;
+            background: #071a32;
+            border-left: 4px solid #32e6ff;
+        }
+
+        .empty-message {
+            padding: 20px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            color: #a9b8c8;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navigation">
+        <a href="/">Devices</a>
+        <a href="/incidents">Incidents</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/correlations">Correlations</a>
+        <a href="/hunt">Threat Hunting</a>
+        <a href="/report">Report</a>
+    </div>
+
+    <h1>ROBIN Threat-Hunting Findings</h1>
+
+    {% if findings %}
+        {% for finding in findings %}
+            <div class="finding-card">
+                <div class="finding-header">
+                    <h2 class="finding-title">
+                        {{ finding.get("title", "Security Finding") }}
+                    </h2>
+
+                    <span
+                        class="severity-badge severity-{{ finding.get('severity', 'low') | lower }}"
+                    >
+                        {{ finding.get("severity", "UNKNOWN") }}
+                    </span>
+                </div>
+
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">
+                            Category
+                        </span>
+
+                        {{ finding.get("category", "Unknown") }}
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">
+                            IP Address
+                        </span>
+
+                        {{ finding.get("ip_address", "Unknown") }}
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">
+                            Device
+                        </span>
+
+                        {{ finding.get("device_label", "Unknown") }}
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">
+                            Finding Score
+                        </span>
+
+                        {{ finding.get("score", 0) }}
+                    </div>
+                </div>
+
+                <p>
+                    {{ finding.get("description", "") }}
+                </p>
+
+                <div class="recommendation">
+                    <strong>Recommended response:</strong>
+                    <br>
+                    {{ finding.get("recommendation", "") }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-message">
+            No automated threat-hunting findings are currently available.
+            ROBIN will generate findings when it detects repeated incidents,
+            services, or behavioral changes.
+        </div>
+    {% endif %}
+</body>
+</html>

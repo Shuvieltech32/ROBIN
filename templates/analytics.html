@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ROBIN Security Analytics</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #06152b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        h1,
+        h2 {
+            color: #32e6ff;
+        }
+
+        .navigation {
+            margin-bottom: 25px;
+        }
+
+        .navigation a {
+            margin-right: 18px;
+            color: #32e6ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(190px, 1fr)
+            );
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            padding: 20px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            border-radius: 8px;
+        }
+
+        .summary-label {
+            color: #32e6ff;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .summary-value {
+            display: block;
+            margin-top: 10px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .panel {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #284b70;
+            text-align: left;
+        }
+
+        th {
+            background: #102f56;
+            color: #32e6ff;
+        }
+
+        .critical {
+            color: #ff4d5a;
+            font-weight: bold;
+        }
+
+        .high {
+            color: #ffae42;
+            font-weight: bold;
+        }
+
+        .medium {
+            color: #ffe066;
+            font-weight: bold;
+        }
+
+        .low {
+            color: #60e890;
+            font-weight: bold;
+        }
+
+        .empty-message {
+            color: #a9b8c8;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navigation">
+        <a href="/">Devices</a>
+        <a href="/incidents">Incidents</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/correlations">Correlations</a>
+        <a href="/hunt">Threat Hunting</a>
+        <a href="/report">Report</a>
+    </div>
+
+    <h1>ROBIN Security Analytics</h1>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <span class="summary-label">
+                Total Incidents
+            </span>
+
+            <span class="summary-value">
+                {{ analytics.get("total_incidents", 0) }}
+            </span>
+        </div>
+
+        <div class="summary-card">
+            <span class="summary-label">
+                Active Incidents
+            </span>
+
+            <span class="summary-value">
+                {{ analytics.get("active_incidents", 0) }}
+            </span>
+        </div>
+
+        <div class="summary-card">
+            <span class="summary-label">
+                Resolved Incidents
+            </span>
+
+            <span class="summary-value">
+                {{ analytics.get("resolved_incidents", 0) }}
+            </span>
+        </div>
+
+        <div class="summary-card">
+            <span class="summary-label">
+                Critical Incidents
+            </span>
+
+            <span class="summary-value critical">
+                {{
+                    analytics.get(
+                        "severity_counts",
+                        {}
+                    ).get("CRITICAL", 0)
+                }}
+            </span>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Incidents by Severity</h2>
+
+        {% set severity_counts =
+            analytics.get("severity_counts", {})
+        %}
+
+        {% if severity_counts %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Severity</th>
+                        <th>Incident Count</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for severity, count in severity_counts.items() %}
+                        <tr>
+                            <td class="{{ severity | lower }}">
+                                {{ severity }}
+                            </td>
+
+                            <td>{{ count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty-message">
+                No severity information is available.
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h2>Incidents by Status</h2>
+
+        {% set status_counts =
+            analytics.get("status_counts", {})
+        %}
+
+        {% if status_counts %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Incident Count</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for status, count in status_counts.items() %}
+                        <tr>
+                            <td>{{ status }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty-message">
+                No status information is available.
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h2>Devices Producing the Most Incidents</h2>
+
+        {% set top_devices =
+            analytics.get("top_devices", [])
+        %}
+
+        {% if top_devices %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>IP Address</th>
+                        <th>Incident Count</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for ip_address, count in top_devices %}
+                        <tr>
+                            <td>{{ ip_address }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty-message">
+                No device analytics are available.
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h2>Most Frequently Detected Services</h2>
+
+        {% set top_services =
+            analytics.get("top_services", [])
+        %}
+
+        {% if top_services %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Occurrences</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for service, count in top_services %}
+                        <tr>
+                            <td>{{ service }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty-message">
+                No service analytics are available.
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h2>Most Frequently Detected Threats</h2>
+
+        {% set top_threats =
+            analytics.get("top_threats", [])
+        %}
+
+        {% if top_threats %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Threat</th>
+                        <th>Occurrences</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for threat, count in top_threats %}
+                        <tr>
+                            <td>{{ threat }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty-message">
+                No known threats have been recorded.
+            </p>
+        {% endif %}
+    </div>
+</body>
+</html>

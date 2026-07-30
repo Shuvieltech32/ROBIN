@@ -85,6 +85,66 @@
             background: #0b2342;
             border: 1px solid #284b70;
         }
+
+.filter-panel {
+    margin-bottom: 25px;
+    padding: 18px;
+    background: #0b2342;
+    border: 1px solid #284b70;
+    border-radius: 8px;
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-group label {
+    color: #32e6ff;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.filter-form input,
+.filter-form select {
+    min-width: 180px;
+    padding: 10px;
+    border: 1px solid #284b70;
+    border-radius: 5px;
+    background: #06152b;
+    color: white;
+}
+
+.filter-button,
+.clear-button {
+    padding: 10px 15px;
+    border: 1px solid #32e6ff;
+    border-radius: 5px;
+    background: transparent;
+    color: #32e6ff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.filter-button:hover,
+.clear-button:hover {
+    background: #32e6ff;
+    color: #06152b;
+}
+
+.result-count {
+    margin-top: 14px;
+    color: #a9b8c8;
+}
     </style>
 </head>
 
@@ -92,9 +152,139 @@
     <div class="navigation">
         <a href="/">Devices</a>
         <a href="/incidents">Incidents</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/correlations">Correlations</a>
+        <a href="/hunt">Threat Hunting</a>
+        <a href="/report">Report</a>
     </div>
 
     <h1>ROBIN Incident Management</h1>
+
+<div class="filter-panel">
+    <form
+        class="filter-form"
+        method="get"
+        action="/incidents"
+    >
+        <div class="filter-group">
+            <label for="search">
+                Search
+            </label>
+
+            <input
+                id="search"
+                name="search"
+                type="text"
+                placeholder="IP, device, title, or description"
+                value="{{ search_query or '' }}"
+            >
+        </div>
+
+        <div class="filter-group">
+            <label for="severity">
+                Severity
+            </label>
+
+            <select id="severity" name="severity">
+                <option value="">All severities</option>
+
+                <option
+                    value="CRITICAL"
+                    {% if severity_filter == "CRITICAL" %}
+                        selected
+                    {% endif %}
+                >
+                    Critical
+                </option>
+
+                <option
+                    value="HIGH"
+                    {% if severity_filter == "HIGH" %}
+                        selected
+                    {% endif %}
+                >
+                    High
+                </option>
+
+                <option
+                    value="MEDIUM"
+                    {% if severity_filter == "MEDIUM" %}
+                        selected
+                    {% endif %}
+                >
+                    Medium
+                </option>
+
+                <option
+                    value="LOW"
+                    {% if severity_filter == "LOW" %}
+                        selected
+                    {% endif %}
+                >
+                    Low
+                </option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="status">
+                Status
+            </label>
+
+            <select id="status" name="status">
+                <option value="">All statuses</option>
+
+                <option
+                    value="OPEN"
+                    {% if status_filter == "OPEN" %}
+                        selected
+                    {% endif %}
+                >
+                    Open
+                </option>
+
+                <option
+                    value="INVESTIGATING"
+                    {% if status_filter == "INVESTIGATING" %}
+                        selected
+                    {% endif %}
+                >
+                    Investigating
+                </option>
+
+                <option
+                    value="CONTAINED"
+                    {% if status_filter == "CONTAINED" %}
+                        selected
+                    {% endif %}
+                >
+                    Contained
+                </option>
+
+                <option
+                    value="RESOLVED"
+                    {% if status_filter == "RESOLVED" %}
+                        selected
+                    {% endif %}
+                >
+                    Resolved
+                </option>
+            </select>
+        </div>
+
+        <button class="filter-button" type="submit">
+            Apply Filters
+        </button>
+
+        <a class="clear-button" href="/incidents">
+            Clear
+        </a>
+    </form>
+
+    <div class="result-count">
+        Showing {{ total_matches }} matching incident(s).
+    </div>
+</div>
 
     {% if incidents %}
         <table>

@@ -2,6 +2,12 @@ from flask import redirect
 import subprocess
 from datetime import datetime
 from modules.firewall import ban_ip, unban_ip
+from modules.analytics import (
+    build_incident_analytics,
+    build_incident_correlations,
+    build_threat_hunting_findings,
+    build_security_report,
+)
 from flask import Flask, render_template, request, Response,  url_for
 from dotenv import load_dotenv
 from modules.incidents import (
@@ -65,6 +71,17 @@ def dashboard():
 
 USERNAME = os.getenv("ROBIN_DASH_USER", "admin")
 PASSWORD = os.getenv("ROBIN_DASH_PASS", "password")
+
+@app.route("/correlations")
+def correlation_dashboard():
+    """Display related incident groups."""
+
+    correlations = build_incident_correlations()
+
+    return render_template(
+        "correlations.html",
+        correlations=correlations,
+    )
 
 @app.route("/trust/<ip>")
 def trust_ip(ip):
@@ -368,18 +385,79 @@ def unban(ip):
 
 @app.route("/incidents")
 def incident_list():
+    """Display and filter recorded incidents."""
+
     incidents = load_incidents()
 
-    incidents.sort(
+    search_query = request.args.get("search", "").strip().lower()
+    severity_filter = request.args.get("severity", "").strip().upper()
+    status_filter = request.args.get("status", "").strip().upper()
+
+    filtered_incidents = []
+
+    for incident in incidents:
+        ip_address = str(
+            incident.get("ip_address", "")
+        ).lower()
+
+        device_label = str(
+            incident.get("device_label", "")
+        ).lower()
+
+        title = str(
+            incident.get("title", "")
+        ).lower()
+
+        description = str(
+            incident.get("description", "")
+        ).lower()
+
+        severity = str(
+            incident.get("severity", "")
+        ).upper()
+
+        status = str(
+            incident.get("status", "")
+        ).upper()
+
+        matches_search = (
+            not search_query
+            or search_query in ip_address
+            or search_query in device_label
+            or search_query in title
+            or search_query in description
+        )
+
+        matches_severity = (
+            not severity_filter
+            or severity == severity_filter
+        )
+
+        matches_status = (
+            not status_filter
+            or status == status_filter
+        )
+
+        if (
+            matches_search
+            and matches_severity
+            and matches_status
+        ):
+            filtered_incidents.append(incident)
+
+    filtered_incidents.sort(
         key=lambda incident: incident.get("created_at", ""),
         reverse=True,
     )
 
     return render_template(
         "incidents.html",
-        incidents=incidents,
+        incidents=filtered_incidents,
+        search_query=search_query,
+        severity_filter=severity_filter,
+        status_filter=status_filter,
+        total_matches=len(filtered_incidents),
     )
-
 
 @app.route("/incidents/<incident_id>")
 def incident_details(incident_id):
@@ -416,6 +494,39 @@ def change_incident_status(incident_id, new_status):
             "incident_details",
             incident_id=incident_id,
         )
+    )
+
+@app.route("/analytics")
+def analytics_dashboard():
+    """Display ROBIN incident analytics."""
+
+    analytics = build_incident_analytics()
+
+    return render_template(
+        "analytics.html",
+        analytics=analytics,
+    )
+
+@app.route("/report")
+def security_report():
+    """Display the ROBIN Phase 7 security report."""
+
+    report = build_security_report()
+
+    return render_template(
+        "security_report.html",
+        report=report,
+    )
+
+@app.route("/hunt")
+def threat_hunting_dashboard():
+    """Display automated threat-hunting findings."""
+
+    findings = build_threat_hunting_findings()
+
+    return render_template(
+        "threat_hunting.html",
+        findings=findings,
     )
 
 if __name__ == "__main__":

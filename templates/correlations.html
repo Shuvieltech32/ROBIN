@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ROBIN Incident Correlation</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #06152b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        h1,
+        h2 {
+            color: #32e6ff;
+        }
+
+        .navigation {
+            margin-bottom: 25px;
+        }
+
+        .navigation a {
+            margin-right: 18px;
+            color: #32e6ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .correlation-card {
+            margin-bottom: 22px;
+            padding: 20px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            border-radius: 8px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(160px, 1fr)
+            );
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .summary-item {
+            padding: 14px;
+            background: #071a32;
+            border: 1px solid #284b70;
+            border-radius: 6px;
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 6px;
+            color: #32e6ff;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 12px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #284b70;
+            text-align: left;
+        }
+
+        th {
+            background: #102f56;
+            color: #32e6ff;
+        }
+
+        .critical {
+            color: #ff4d5a;
+        }
+
+        .score {
+            color: #ffae42;
+        }
+
+        .empty-message {
+            padding: 18px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            color: #a9b8c8;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navigation">
+        <a href="/">Devices</a>
+        <a href="/incidents">Incidents</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/correlations">Correlations</a>
+        <a href="/hunt">Threat Hunting</a>
+        <a href="/report">Report</a>
+    </div>
+
+    <h1>ROBIN Incident Correlation</h1>
+
+    {% if correlations %}
+        {% for group in correlations %}
+            <div class="correlation-card">
+                <h2>
+                    {{ group.get("ip_address", "Unknown") }}
+                </h2>
+
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="label">Device</span>
+                        <span class="value">
+                            {{ group.get("device_label", "Unknown") }}
+                        </span>
+                    </div>
+
+                    <div class="summary-item">
+                        <span class="label">Incidents</span>
+                        <span class="value">
+                            {{ group.get("incident_count", 0) }}
+                        </span>
+                    </div>
+
+                    <div class="summary-item">
+                        <span class="label">Active</span>
+                        <span class="value">
+                            {{ group.get("active_count", 0) }}
+                        </span>
+                    </div>
+
+                    <div class="summary-item">
+                        <span class="label">Critical</span>
+                        <span class="value critical">
+                            {{ group.get("critical_count", 0) }}
+                        </span>
+                    </div>
+
+                    <div class="summary-item">
+                        <span class="label">Correlation Score</span>
+                        <span class="value score">
+                            {{ group.get("correlation_score", 0) }}
+                        </span>
+                    </div>
+
+                    <div class="summary-item">
+                        <span class="label">First Seen</span>
+                        <span class="value">
+                            {{ group.get("first_seen", "Unknown") }}
+                        </span>
+                    </div>
+
+                    <div class="summary-item">
+                        <span class="label">Last Seen</span>
+                        <span class="value">
+                            {{ group.get("last_seen", "Unknown") }}
+                        </span>
+                    </div>
+                </div>
+
+                <h2>Status Breakdown</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for status, count in group.get("statuses", {}).items() %}
+                            <tr>
+                                <td>{{ status }}</td>
+                                <td>{{ count }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h2>Repeated Services</h2>
+
+                {% if group.get("top_services") %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Occurrences</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for service, count in group.get("top_services", []) %}
+                                <tr>
+                                    <td>{{ service }}</td>
+                                    <td>{{ count }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No repeated services were recorded.</p>
+                {% endif %}
+
+                <h2>Repeated Behaviors</h2>
+
+                {% if group.get("top_behaviors") %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Behavior</th>
+                                <th>Occurrences</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for behavior, count in group.get("top_behaviors", []) %}
+                                <tr>
+                                    <td>{{ behavior }}</td>
+                                    <td>{{ count }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No repeated behavior information was recorded.</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-message">
+            No incident correlations are available.
+        </div>
+    {% endif %}
+</body>
+</html>
