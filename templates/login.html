@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ROBIN Login</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: #06152b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            padding: 32px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            border-radius: 10px;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #32e6ff;
+        }
+
+        .subtitle {
+            margin-bottom: 24px;
+            color: #a9b8c8;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: #32e6ff;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            margin-bottom: 18px;
+            padding: 12px;
+            border: 1px solid #284b70;
+            border-radius: 6px;
+            background: #06152b;
+            color: white;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #32e6ff;
+            border-radius: 6px;
+            background: #32e6ff;
+            color: #06152b;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .error {
+            margin-bottom: 18px;
+            padding: 12px;
+            border-left: 4px solid #ff4d5a;
+            background: #48151b;
+            color: #ffb3b9;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="login-card">
+        <h1>ROBIN Secure Login</h1>
+
+        <p class="subtitle">
+            Sign in to access network monitoring and incident management.
+        </p>
+
+        {% if error %}
+            <div class="error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="post" action="/login">
+            <label for="username">Username</label>
+
+            <input
+                id="username"
+                name="username"
+                type="text"
+                autocomplete="username"
+                required
+                autofocus
+            >
+
+            <label for="password">Password</label>
+
+            <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit">
+                Sign In
+            </button>
+        </form>
+    </main>
+</body>
+</html>

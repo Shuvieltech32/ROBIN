@@ -1,4 +1,29 @@
-from flask import redirect
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
+from modules.auth import (
+    change_user_role,
+    create_user,
+    get_user_by_id,
+    list_users,
+    set_user_active,
+    update_password,
+    verify_user,
+)
+from flask import (
+    Flask,
+    Response,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
+from modules.audit import load_audit_log, record_audit_event
 import subprocess
 from datetime import datetime
 from modules.firewall import ban_ip, unban_ip
@@ -8,6 +33,7 @@ from modules.analytics import (
     build_threat_hunting_findings,
     build_security_report,
 )
+from modules.rbac import role_required
 from flask import Flask, render_template, request, Response,  url_for
 from dotenv import load_dotenv
 from modules.incidents import (
@@ -30,6 +56,32 @@ load_dotenv()
 
 app = Flask(__name__)
 
+secret_key = os.getenv("SECRET_KEY")
+
+if not secret_key:
+    raise RuntimeError(
+        "SECRET_KEY is missing. Add it to the .env file."
+    )
+
+app.config["SECRET_KEY"] = secret_key
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+login_manager.login_view = "login"
+login_manager.login_message = (
+    "Please sign in to access the ROBIN dashboard."
+)
+login_manager.login_message_category = "warning"
+
+@login_manager.user_loader
+def load_authenticated_user(user_id: str):
+    """Reload a user from the session."""
+
+    return get_user_by_id(user_id)
+
 HISTORY_FILE = "data/device_history.json"
 
 def load_device():
@@ -39,7 +91,88 @@ def load_device():
     with open(HISTORY_FILE, "r") as f:
         return json.load(f)
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Authenticate a ROBIN user."""
+
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
+
+    error = None
+
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+
+        user = verify_user(username, password)
+
+        if user is None:
+            record_audit_event(
+                actor=username or "unknown",
+                action="LOGIN_FAILED",
+                target=username or "unknown",
+                details="Invalid username or password.",
+                ip_address=request.remote_addr,
+                success=False,
+            )
+
+            error = "Invalid username or password."
+
+        else:
+            login_user(user)
+
+            record_audit_event(
+                actor=user.username,
+                action="LOGIN_SUCCESS",
+                target=user.username,
+                details=f"User logged in with role {user.role}.",
+                ip_address=request.remote_addr,
+                success=True,
+            )
+
+            flash(
+                f"Welcome, {user.username}.",
+                "success",
+            )
+
+            return redirect(url_for("home"))
+
+    return render_template(
+        "login.html",
+        error=error,
+    )
+
+@app.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    username = current_user.username
+
+    record_audit_event(
+        actor=username,
+        action="LOGOUT",
+        target=username,
+        details="User logged out.",
+        ip_address=request.remote_addr,
+        success=True,
+    )
+
+    logout_user()
+
+    return redirect(url_for("login"))
+
+    """End the curren ROBIN seesion."""
+
+    logout_user()
+
+    flash(
+        "You have been signed out.",
+        "success",
+    )
+
+    return redirect(url_for("login"))
+
 @app.route("/")
+@login_required
 def dashboard():
     devices = load_device()
     labels = load_labels()
@@ -73,6 +206,7 @@ USERNAME = os.getenv("ROBIN_DASH_USER", "admin")
 PASSWORD = os.getenv("ROBIN_DASH_PASS", "password")
 
 @app.route("/correlations")
+@login_required
 def correlation_dashboard():
     """Display related incident groups."""
 
@@ -84,6 +218,7 @@ def correlation_dashboard():
     )
 
 @app.route("/trust/<ip>")
+@role_required("ADMIN")
 def trust_ip(ip):
     labels = load_labels()
 
@@ -95,6 +230,7 @@ def trust_ip(ip):
     return redirect("/")
 
 @app.route("/ignore/<ip>")
+@role_required("ADMIN")
 def ignore_ip(ip):
     history = load_device()
 
@@ -109,6 +245,7 @@ def ignore_ip(ip):
     return redirect("/")
 
 @app.route("/ban/<ip>")
+@role_required("ADMIN")
 def dashboard_ban(ip):
     ban_ip(ip)
     return redirect("/")
@@ -116,23 +253,8 @@ def dashboard_ban(ip):
 def check_auth(username, password):
     return username == USERNAME and password == PASSWORD
 
-
-def login_required():
-    return Response(
-        "Login Required",
-        401,
-        {"WWW-Authenticate": 'Basic realm="R.O.B.I.N Dashboard"'}
-    )
-
-
-@app.before_request
-def require_login():
-    auth = request.authorization
-    if not auth or not check_auth(auth.username, auth.password):
-        return login_required()
-
-
 @app.route("/")
+@login_required
 def home():
     history_file = "data/device_history.json"
 
@@ -319,6 +441,7 @@ def home():
     return html
 
 @app.route("/investigate/<ip>")
+@role_required("ADMIN", "ANALYST")
 def investigate(ip):
     devices = load_device()
     labels = load_labels()
@@ -337,6 +460,7 @@ def investigate(ip):
     return render_template("investigate.html", ip=ip, data=data)
 
 @app.route("/scan/<ip>")
+@role_required("ADMIN", "ANALYST")
 def scan_ip(ip):
 
     result = subprocess.run(
@@ -373,17 +497,20 @@ def scan_ip(ip):
     )
 
 @app.route("/ban/<ip>")
+@role_required("ADMIN")
 def ban(ip):
     ban_ip(ip, method="fail2ban")
     return redirect("/")
 
 
 @app.route("/unban/<ip>")
+@role_required("ADMIN")
 def unban(ip):
     unban_ip(ip, method="fail2ban")
     return redirect("/")
 
 @app.route("/incidents")
+@role_required("ADMIN", "ANALYST")
 def incident_list():
     """Display and filter recorded incidents."""
 
@@ -460,6 +587,7 @@ def incident_list():
     )
 
 @app.route("/incidents/<incident_id>")
+@role_required("ADMIN", "ANALYST")
 def incident_details(incident_id):
     incident = get_incident(incident_id)
 
@@ -476,6 +604,7 @@ def incident_details(incident_id):
     "/incidents/<incident_id>/status/<new_status>",
     methods=["POST"],
 )
+@role_required("ADMIN", "ANALYST")
 def change_incident_status(incident_id, new_status):
     try:
         updated_incident = update_incident_status(
@@ -497,6 +626,7 @@ def change_incident_status(incident_id, new_status):
     )
 
 @app.route("/analytics")
+@login_required
 def analytics_dashboard():
     """Display ROBIN incident analytics."""
 
@@ -508,6 +638,7 @@ def analytics_dashboard():
     )
 
 @app.route("/report")
+@login_required
 def security_report():
     """Display the ROBIN Phase 7 security report."""
 
@@ -519,6 +650,7 @@ def security_report():
     )
 
 @app.route("/hunt")
+@login_required
 def threat_hunting_dashboard():
     """Display automated threat-hunting findings."""
 
@@ -527,6 +659,118 @@ def threat_hunting_dashboard():
     return render_template(
         "threat_hunting.html",
         findings=findings,
+    )
+
+@app.route("/admin/users", methods=["GET", "POST"])
+@role_required("ADMIN")
+def admin_users():
+    message = None
+    error = None
+
+    if request.method == "POST":
+        action = request.form.get("action", "").strip()
+
+        try:
+            if action == "create":
+                username = request.form.get("username", "")
+                password = request.form.get("password", "")
+                role = request.form.get("role", "VIEWER")
+
+                create_user(
+                    username=username,
+                    password=password,
+                    role=role,
+                )
+
+                record_audit_event(
+                    actor=current_user.username,
+                    action="USER_CREATED",
+                    target=username.strip().lower(),
+                    details=f"Created user with role {role.strip().upper()}.",
+                    ip_address=request.remote_addr,
+                )
+
+                message = f"User '{username}' created."
+
+            elif action == "disable":
+                username = request.form.get("username", "")
+                set_user_active(
+                    username,
+                    False,
+                    acting_username=current_user.username,
+                )
+
+                record_audit_event(
+                    actor=current_user.username,
+                    action="USER_DISABLED",
+                    target=username.strip().lower(),
+                    details="User account disabled.",
+                    ip_address=request.remote_addr,
+                )
+
+                record_audit_event(
+                    actor=current_user.username,
+                    action="USER_ENABLED",
+                    target=username.strip().lower(),
+                    details="User account enabled.",
+                    ip_address=request.remote_addr,
+                )
+
+                message = f"User '{username}' disabled."
+
+            elif action == "enable":
+                username = request.form.get("username", "")
+                set_user_active(username, True)
+                message = f"User '{username}' enabled."
+
+            elif action == "change_role":
+                username = request.form.get("username", "")
+                new_role = request.form.get("role", "VIEWER")
+
+                change_user_role(username, new_role)
+
+                record_audit_event(
+                    actor=current_user.username,
+                    action="USER_ROLE_CHANGE",
+                    target=username.strip().lower(),
+                    details=f"Role change to {new_role.strip().upper()}.",
+                    ip_address=request.remote_addr,
+                )
+
+                message = f"Role updated for '{username}'."
+
+            else:
+                error = "Unknown admin action."
+
+        except ValueError as exc:
+            error = str(exc)
+
+            record_audit_event(
+                actor=current_user.username,
+                action="ADMIN_ACTION_FAILED",
+                target=request.form.get("username", "unknown"),
+                details=str(exc),
+                ip_address=request.remote_addr,
+                success=False,
+            )
+
+    return render_template(
+        "admin_users.html",
+        users=list_users(),
+        message=message,
+        error=error,
+    )
+
+@app.route("/admin/audit")
+@role_required("ADMIN")
+def admin_audit():
+    entries = load_audit_log()
+
+    entries = list(reversed(entries))
+
+    return render_template(
+        "audit_log.html",
+        entries=entries,
     )
 
 if __name__ == "__main__":

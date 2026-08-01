@@ -67,12 +67,87 @@
         100% { opacity: 1; }
     }
 
+.navigation {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 22px;
+    padding: 12px 16px;
+    background: #071a32;
+    border: 1px solid #284b70;
+    border-radius: 7px;
+}
+
+.navigation a {
+    color: #32e6ff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.navigation a:hover {
+    text-decoration: underline;
+}
+
+.signed-in-user {
+    margin-left: auto;
+    color: #a9b8c8;
+    font-size: 14px;
+}
+
+.logout-form {
+    display: inline;
+    margin: 0;
+}
+
+.logout-button {
+    padding: 7px 11px;
+    border: 1px solid #ff4d5a;
+    border-radius: 5px;
+    background: transparent;
+    color: #ff7b85;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background: #ff4d5a;
+    color: white;
+}
+
+.read-only-label {
+    color: #a9b8c8;
+    font-style: italic;
+}
+
     </style>
 
 </head>
 
 <body>
+<nav class="navigation">
+    <a href="/">Devices</a>
+    <a href="/incidents">Incidents</a>
+    <a href="/analytics">Analytics</a>
+    <a href="/correlations">Correlations</a>
+    <a href="/hunt">Threat Hunt</a>
+    <a href="/report">Report</a>
 
+    {% if current_user.role == "ADMIN" %}
+        <a href="/admin/users">Admin Users</a>
+        <a href="/admin/audit">Audit Log</a>
+    {% endif %}
+
+    <span class="signed-in-user">
+        Signed in as {{ current_user.username }}
+        ({{ current_user.role }})
+    </span>
+
+    <form method="POST" action="/logout" class="logout-form">
+        <button type="submit" class="logout-button">
+            Log Out
+        </button>
+    </form>
+</nav>
     <div class="header">
         <img src="/static/robin_logo.png" width="80">
         <div>
@@ -146,20 +221,56 @@
             <td>{{ data.get("last_seen", "Unknown") }}</td>
 
             <td>
-                <a class="action-link investigate-btn"
-                   href="/investigate/{{ ip }}">Investigate</a>
-                |
-                <a class="action-link scan-btn" 
-                   href="/scan/{{ ip }}">Scan</a>
-                |
-                <a class="action-link" href="/trust/{{ ip }}">Trust</a>
-                |
-                <a class="action-link" href="/ignore/{{ ip }}">Ignore</a>
-                |
-                <a class="action-link" href="/ban/{{ ip }}">Ban</a>
-                |
-                <a class"action-link" href="/unban/{{ ip }}">Unban</a>
-            </td>
+                {% if current_user.role in ["ADMIN", "ANALYST"] %}
+                     <a
+                         class="action-link investigate-btn"
+                         href="/investigate/{{ ip }}"
+                     >
+                         Investigate
+                     </a>
+
+                     |
+
+                     <a
+                         class="action-link scan-btn"
+                         href="/scan/{{ ip }}"
+                     >
+                         Scan
+                     </a>
+                 {% endif %}
+
+                 {% if current_user.role == "ADMIN" %}
+                     |
+
+                     <a class="action-link" href="/trust/{{ ip }}">
+                         Trust
+                     </a>
+
+                     |
+
+                     <a class="action-link" href="/ignore/{{ ip }}">
+                         Ignore
+                     </a>
+
+                     |
+
+                     <a class="action-link" href="/ban/{{ ip }}">
+                         Ban
+                     </a>
+
+                     |
+
+                     <a class="action-link" href="/unban/{{ ip }}">
+                         Unban
+                     </a>
+                 {% endif %}
+
+    {% if current_user.role == "VIEWER" %}
+        <span class="read-only-label">
+            Read only
+        </span>
+    {% endif %}
+</td>
 
             </tr>
 

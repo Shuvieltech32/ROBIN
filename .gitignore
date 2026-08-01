@@ -11,3 +11,5 @@ logs/
 data/incidents.json
 data/incidents_backup.json
 images/temp.png
+data/users.json
+data/audit_log.json

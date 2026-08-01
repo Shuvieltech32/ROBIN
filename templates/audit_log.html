@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ROBIN Audit Log</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #06152b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #32e6ff;
+        }
+
+        .navigation {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            background: #071a32;
+            border: 1px solid #284b70;
+            border-radius: 7px;
+        }
+
+        .navigation a {
+            color: #32e6ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .panel {
+            padding: 20px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 11px;
+            border: 1px solid #284b70;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            color: #32e6ff;
+            background: #071a32;
+        }
+
+        .success {
+            color: #60e890;
+            font-weight: bold;
+        }
+
+        .failure {
+            color: #ff6b76;
+            font-weight: bold;
+        }
+
+        .no-data {
+            color: #a9b8c8;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navigation">
+        <a href="/">Devices</a>
+        <a href="/incidents">Incidents</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/admin/users">Admin Users</a>
+        <a href="/admin/audit">Audit Log</a>
+    </nav>
+
+    <h1>ROBIN Security Audit Log</h1>
+
+    <section class="panel">
+        {% if entries %}
+            <table>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Target</th>
+                    <th>Details</th>
+                    <th>IP Address</th>
+                    <th>Result</th>
+                </tr>
+
+                {% for entry in entries %}
+                    <tr>
+                        <td>{{ entry.get("timestamp", "Unknown") }}</td>
+
+                        <td>{{ entry.get("actor", "Unknown") }}</td>
+
+                        <td>{{ entry.get("action", "Unknown") }}</td>
+
+                        <td>{{ entry.get("target") or "—" }}</td>
+
+                        <td>{{ entry.get("details") or "—" }}</td>
+
+                        <td>{{ entry.get("ip_address") or "—" }}</td>
+
+                        <td>
+                            {% if entry.get("success", False) %}
+                                <span class="success">SUCCESS</span>
+                            {% else %}
+                                <span class="failure">FAILED</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p class="no-data">
+                No audit events have been recorded.
+            </p>
+        {% endif %}
+    </section>
+</body>
+</html>

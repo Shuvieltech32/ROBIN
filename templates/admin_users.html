@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ROBIN User Management</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #06152b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        h1,
+        h2 {
+            color: #32e6ff;
+        }
+
+        .navigation {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            background: #071a32;
+            border: 1px solid #284b70;
+            border-radius: 7px;
+        }
+
+        .navigation a {
+            color: #32e6ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .panel {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #0b2342;
+            border: 1px solid #284b70;
+            border-radius: 8px;
+        }
+
+        input,
+        select,
+        button {
+            margin: 6px;
+            padding: 9px;
+            border-radius: 5px;
+        }
+
+        input,
+        select {
+            border: 1px solid #284b70;
+            background: #071a32;
+            color: white;
+        }
+
+        button {
+            border: 1px solid #32e6ff;
+            background: transparent;
+            color: #32e6ff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #32e6ff;
+            color: #06152b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 11px;
+            border: 1px solid #284b70;
+            text-align: left;
+        }
+
+        th {
+            color: #32e6ff;
+        }
+
+        .success {
+            color: #60e890;
+        }
+
+        .error {
+            color: #ff6b76;
+        }
+
+        .disabled {
+            color: #ff6b76;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navigation">
+        <a href="/">Devices</a>
+        <a href="/incidents">Incidents</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/admin/users">Admin Users</a>
+        <a href="/admin/audit">Audit Log</a>
+    </nav>
+
+    <h1>ROBIN User Management</h1>
+
+    {% if message %}
+        <p class="success">{{ message }}</p>
+    {% endif %}
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <section class="panel">
+        <h2>Create User</h2>
+
+        <form method="POST">
+            <input type="hidden" name="action" value="create">
+
+            <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                required
+            >
+
+            <input
+                type="password"
+                name="password"
+                placeholder="Temporary password"
+                minlength="12"
+                required
+            >
+
+            <select name="role">
+                <option value="VIEWER">VIEWER</option>
+                <option value="ANALYST">ANALYST</option>
+                <option value="ADMIN">ADMIN</option>
+            </select>
+
+            <button type="submit">Create User</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Existing Users</h2>
+
+        <table>
+            <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Role Change</th>
+                <th>Account Action</th>
+            </tr>
+
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+
+                    <td>
+                        {% if user.active %}
+                            Active
+                        {% else %}
+                            <span class="disabled">Disabled</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <form method="POST">
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="change_role"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="username"
+                                value="{{ user.username }}"
+                            >
+
+                            <select name="role">
+                                <option value="VIEWER">VIEWER</option>
+                                <option value="ANALYST">ANALYST</option>
+                                <option value="ADMIN">ADMIN</option>
+                            </select>
+
+                            <button type="submit">
+                                Update Role
+                            </button>
+                        </form>
+                    </td>
+
+                    <td>
+                        {% if user.active %}
+                            <form method="POST">
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="disable"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="username"
+                                    value="{{ user.username }}"
+                                >
+
+                                <button type="submit">
+                                    Disable
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="POST">
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="enable"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="username"
+                                    value="{{ user.username }}"
+                                >
+
+                                <button type="submit">
+                                    Enable
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </section>
+</body>
+</html>
